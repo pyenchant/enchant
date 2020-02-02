@@ -17,4 +17,8 @@ install:
 
 # FIXME: add all available providers (just aspell?)
 build_script:
-  - C:\msys64\usr\bin\bash.exe -lc "cd c:/projects/enchant && ./bootstrap && ./configure --enable-relocatable --disable-gcc-warnings %CONFIGURE_FLAGS% && make
+  - C:\msys64\usr\bin\bash.exe -lc "cd c:/projects/enchant && ./bootstrap && ./configure --enable-relocatable --disable-gcc-warnings %CONFIGURE_FLAGS% && make && make install DESTDIR=$(pwd)/dist"
+
+artifacts:
+  - path: dist
+    name: dist
