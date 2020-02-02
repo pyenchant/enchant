@@ -33,10 +33,3 @@ cd hunspell-1.6.0
 ln -s README.md README && autoreconf -vfi
 ./configure --prefix=$PREFIX && make && make install
 cd ..
-
-# UnitTest++
-wget https://github.com/unittest-cpp/unittest-cpp/releases/download/v1.6.1/unittest-cpp-1.6.1.tar.gz
-tar zxvf unittest-cpp-1.6.1.tar.gz
-cd unittest-cpp-1.6.1
-./configure --prefix=$PREFIX && make && make install
-cd ..
