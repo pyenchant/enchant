@@ -7,7 +7,6 @@ environment:
     CONFIGURE_FLAGS: --with-hunspell-dir=/mingw64/share/hunspell
     VERBOSE: 1 # Get test logs in output
   matrix:
-    - MSYSTEM: MSYS
     - MSYSTEM: MINGW64
     - MSYSTEM: MINGW32
 
