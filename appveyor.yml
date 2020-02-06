@@ -15,10 +15,9 @@ init:
 install:
   - C:\msys64\usr\bin\bash.exe -l c:/projects/enchant/build-aux/appveyor-install.sh
 
-# FIXME: add all available providers (just aspell?)
 build_script:
-  - C:\msys64\usr\bin\bash.exe -lc "pacman -Ql mingw-w64-x86_64-hunspell-en"
+  - C:\msys64\usr\bin\bash.exe -l c:/projects/enchant/build-aux/appveyor-package.sh
 
 artifacts:
-  - path: dist
-    name: dist
+  - path: dist/mingw64
+    name: enchant-prefix
