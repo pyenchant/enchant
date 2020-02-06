@@ -17,8 +17,7 @@ install:
 
 # FIXME: add all available providers (just aspell?)
 build_script:
-  - C:\msys64\usr\bin\bash.exe -lc "cd c:/projects/enchant && ./bootstrap && ./configure --enable-relocatable --disable-gcc-warnings %CONFIGURE_FLAGS% && make && make install DESTDIR=$(pwd)/dist"
-  - C:\msys64\usr\bin\bash.exe -lc "cp -v /mingw64/bin/*.dll c:/projects/enchant/dist/mingw64/bin/"
+  - C:\msys64\usr\bin\bash.exe -lc "pacman -Ql mingw-w64-x86_64-hunspell-en"
 
 artifacts:
   - path: dist
