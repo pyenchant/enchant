@@ -26,7 +26,7 @@ pacman --noconfirm -S glib2-devel
 
 # Hunspell dictionary (only need one flavour)
 wget http://repo.msys2.org/mingw/$MINGW_BITS/mingw-w64-$MINGW_BITS-hunspell-en-2016.11.20-2-any.pkg.tar.xz
-pacman --noconfirm -U mingw-w64-i686-hunspell-en-2016.11.20-2-any.pkg.tar.xz
+pacman --noconfirm -U mingw-w64-$MINGW_BITS-hunspell-en-2016.11.20-2-any.pkg.tar.xz
 
 # Hunspell
 wget https://github.com/hunspell/hunspell/archive/v1.6.0.tar.gz
