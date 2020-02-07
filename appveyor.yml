@@ -8,6 +8,7 @@ environment:
     VERBOSE: 1 # Get test logs in output
   matrix:
     - MSYSTEM: MINGW32
+    - MSYSTEM: MINGW64
 
 init:
   - git config --global core.autocrlf input
@@ -19,5 +20,5 @@ build_script:
   - C:\msys64\usr\bin\bash.exe -l c:/projects/enchant/build-aux/appveyor-package.sh
 
 artifacts:
-  - path: dist/mingw32
+  - path: dist
     name: enchant-prefix
