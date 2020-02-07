@@ -7,6 +7,6 @@ cd c:/projects/enchant
 make
 make install DESTDIR=$(pwd)/dist
 
-cp -v /mingw64/bin/*.dll c:/projects/enchant/dist/mingw64/bin/
-mkdir -p c:/projects/enchant/dist/mingw64/share/enchant/hunspell/
-cp -v /mingw64/share/hunspell/*  c:/projects/enchant/dist/mingw64/share/enchant/hunspell
+cp -v /mingw32/bin/*.dll c:/projects/enchant/dist/mingw32/bin/
+mkdir -p c:/projects/enchant/dist/mingw32/share/enchant/hunspell/
+cp -v /mingw32/share/hunspell/*  c:/projects/enchant/dist/mingw32/share/enchant/hunspell

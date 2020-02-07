@@ -4,10 +4,10 @@ clone_folder: c:\projects\enchant
 environment:
   global:
     # Only need one flavour of dictionary
-    CONFIGURE_FLAGS: --with-hunspell-dir=/mingw64/share/hunspell
+    CONFIGURE_FLAGS: --with-hunspell-dir=/mingw32/share/hunspell
     VERBOSE: 1 # Get test logs in output
   matrix:
-    - MSYSTEM: MINGW64
+    - MSYSTEM: MINGW32
 
 init:
   - git config --global core.autocrlf input
@@ -19,5 +19,5 @@ build_script:
   - C:\msys64\usr\bin\bash.exe -l c:/projects/enchant/build-aux/appveyor-package.sh
 
 artifacts:
-  - path: dist/mingw64
+  - path: dist/mingw32
     name: enchant-prefix
