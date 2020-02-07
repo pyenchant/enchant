@@ -7,8 +7,8 @@ environment:
     CONFIGURE_FLAGS: --with-hunspell-dir=/mingw32/share/hunspell
     VERBOSE: 1 # Get test logs in output
   matrix:
-    - MSYSTEM: MINGW32
     - MSYSTEM: MINGW64
+    - MSYSTEM: MINGW32
 
 init:
   - git config --global core.autocrlf input
