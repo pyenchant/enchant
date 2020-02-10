@@ -16,6 +16,5 @@ init:
 install:
   - C:\msys64\usr\bin\bash.exe -l c:/projects/enchant/build-aux/appveyor-install.sh
 
-# FIXME: add all available providers (just aspell?)
 build_script:
   - C:\msys64\usr\bin\bash.exe -lc "cd c:/projects/enchant && ./bootstrap && ./configure --enable-relocatable %CONFIGURE_FLAGS% && make && make DISTCHECK_CONFIGURE_FLAGS=\"--enable-relocatable %CONFIGURE_FLAGS%\" distcheck"
