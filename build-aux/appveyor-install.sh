@@ -1,6 +1,8 @@
 #!/bin/sh
 # Pre-install script for appveyor: install build deps
 
+set -x
+
 # Get mingw type, if any, from MSYSTEM
 case $MSYSTEM in
     MINGW32)
