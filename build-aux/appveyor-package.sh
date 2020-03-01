@@ -68,6 +68,7 @@ copy_licenses() {
     libiconv
     gettext
     pcre
+    winpthreads
   )
 
   for license in "${licenses[@]}" ; do
