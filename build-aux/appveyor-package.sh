@@ -64,7 +64,6 @@ copy_licenses() {
     glib2
     libiconv
     gettext
-	hunspell
     pcre
   )
 

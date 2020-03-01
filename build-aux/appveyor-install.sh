@@ -31,7 +31,10 @@ pacman --noconfirm -U mingw-w64-$MINGW_BITS-hunspell-en-2016.11.20-2-any.pkg.tar
 # Hunspell
 wget https://github.com/hunspell/hunspell/archive/v1.6.0.tar.gz
 tar zxvf v1.6.0.tar.gz || true # Error in unpacking (symlink README before file README.md)
-cd hunspell-1.6.0
-ln -s README.md README && autoreconf -vfi
-./configure --prefix=$PREFIX && make && make install
-cd ..
+(
+  cd hunspell-1.6.0
+  ln -s README.md README && autoreconf -vfi
+  ./configure --prefix=$PREFIX && make && make install
+  mkdir -p $PREFIX/share/licenses/hunspell
+  cp -v COPYING* $PREFIX/share/licenses/hunspell
+)
