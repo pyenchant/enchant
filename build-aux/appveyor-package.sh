@@ -4,9 +4,11 @@ set -e
 case $MSYSTEM in
   MINGW32)
     MINGW_ARCH=mingw32
+	LIBGCC="libgcc_s_dw2-1.dll"
     ;;
   MINGW64)
     MINGW_ARCH=mingw64
+	LIBGCC="libgcc_s_seh-1.dll"
     ;;
 esac
 
@@ -35,7 +37,7 @@ copy_dlls() {
   dest="$PROJECT_DIR/dist/$MINGW_ARCH/bin/"
   mkdir -p $dest
   dlls=(
-    libgcc_s_seh-1.dll
+    $LIBGCC
     libglib-2.0-0.dll
     libgmodule-2.0-0.dll
     libgobject-2.0-0.dll
