@@ -62,6 +62,7 @@ copy_licenses() {
   licenses=(
     gcc-libs
     glib2
+    hunspell
     libiconv
     gettext
     pcre
