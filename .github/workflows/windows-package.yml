@@ -36,10 +36,10 @@ jobs:
     - name: make
       run: make --jobs=`nproc`
     - name: install
-      run:
-        - make install DESTDIR=$(pwd)/dist
-        - cp -v /${{matrix.sys}}/bin/*.dll dist/${{matrix.sys}}/bin/
-        - cp -v /${{matrix.sys}}/share/hunspell/*  dist/${{matrix.sys}}/share/enchant/hunspell
+      run: |
+        make install DESTDIR=$(pwd)/dist
+        cp -v /${{matrix.sys}}/bin/*.dll dist/${{matrix.sys}}/bin/
+        cp -v /${{matrix.sys}}/share/hunspell/*  dist/${{matrix.sys}}/share/enchant/hunspell
     - name: Archive Release
       uses: thedoctor0/zip-release@0.7.1
       with:
