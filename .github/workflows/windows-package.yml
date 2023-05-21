@@ -1,6 +1,6 @@
 name: windows packaging
 
-on: [push, pull_request]
+on: [tag]
 
 jobs:
   build-windows:
@@ -43,5 +43,10 @@ jobs:
     - name: Archive Release
       uses: thedoctor0/zip-release@0.7.1
       with:
-        filename: 'enchant.zip'
+        filename: "enchant.zip"
         directory: dist
+    - name: Upload Release
+      uses: ncipollo/release-action@v1.12.0
+      with:
+        artifacts: "enchant.zip"
+        token: ${{ secrets.GITHUB_TOKEN }}
