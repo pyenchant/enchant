@@ -45,10 +45,10 @@ jobs:
     - name: Archive Release
       uses: thedoctor0/zip-release@0.7.1
       with:
-        filename: "enchant.zip"
+        filename: "enchant-${{matrix.env}}.zip"
         directory: dist
     - name: Upload Release
       uses: ncipollo/release-action@v1.12.0
       with:
-        artifacts: "dist/enchant.zip"
+        artifacts: "dist/enchant-${{matrix.env}}.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
