@@ -53,3 +53,4 @@ jobs:
       with:
         artifacts: "dist/enchant-${{matrix.env}}.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
+        skipIfReleaseExists: true
