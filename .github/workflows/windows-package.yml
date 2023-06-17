@@ -48,9 +48,9 @@ jobs:
       with:
         filename: "enchant-${{matrix.env}}.zip"
         directory: dist
-    - name: Upload Release
-      uses: ncipollo/release-action@v1.12.0
+    - name: Upload assets
+      uses: softprops/action-gh-release@v1
       with:
-        artifacts: "dist/enchant-${{matrix.env}}.zip"
-        token: ${{ secrets.GITHUB_TOKEN }}
-        skipIfReleaseExists: true
+        files: "enchant-*.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
