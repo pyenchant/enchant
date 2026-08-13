@@ -1,6 +1,7 @@
 /* enchant
  * Copyright (C) 2022 Dimitrij Mijoski
  * Copyright (C) 2020 Sander van Geloven
+ * Copyright (C) 2024-2025 Reuben Thomas
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -12,16 +13,15 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along along with this program; if not, see
+ * <https://www.gnu.org/licenses/>.
  *
  * In addition, as a special exception, the copyright holders
  * give permission to link the code of this program with
  * non-LGPL Spelling Provider libraries (eg: a MSFT Office
  * spell checker backend) and distribute linked combinations including
- * the two.  You must obey the GNU General Public License in all
+ * the two.  You must obey the GNU Lesser General Public License in all
  * respects for all of the code used other than said providers.  If you modify
  * this file, you may extend this exception to your version of the
  * file, but you are not obligated to do so.  If you do not wish to
@@ -31,7 +31,7 @@
 /*
  * This is the Nuspell Enchant Backend.
  * Nuspell is by Dimitrij Mijoski and Sander van Geloven.
- * See: http://nuspell.github.io/
+ * See: https://nuspell.github.io/
  */
 
 #include "config.h"
@@ -47,8 +47,10 @@
 
 using namespace std;
 
-// EnchantDict functions
-static int nuspell_dict_check(EnchantDict* me, const char* const word,
+static EnchantProvider *provider;
+
+// EnchantProviderDict functions
+static int nuspell_dict_check(EnchantProviderDict* me, const char* const word,
                               size_t len)
 {
 	auto dict = static_cast<nuspell::Dictionary*>(me->user_data);
@@ -59,7 +61,7 @@ static int nuspell_dict_check(EnchantDict* me, const char* const word,
 	return !dict->spell(normalized_word.get());
 }
 
-static char** nuspell_dict_suggest(EnchantDict* me, const char* const word,
+static char** nuspell_dict_suggest(EnchantProviderDict* me, const char* const word,
                                    size_t len, size_t* out_n_suggs)
 {
 	auto dict = static_cast<nuspell::Dictionary*>(me->user_data);
@@ -70,27 +72,34 @@ static char** nuspell_dict_suggest(EnchantDict* me, const char* const word,
 	    UniquePtr(g_utf8_normalize(word, len, G_NORMALIZE_NFC), g_free);
 	auto suggestions = vector<string>();
 	dict->suggest(normalized_word.get(), suggestions);
-	if (empty(suggestions)) {
-		*out_n_suggs = 0;
-		return nullptr;
-	}
 	char** sug_list = g_new0(char*, size(suggestions) + 1);
-	transform(begin(suggestions), end(suggestions), sug_list,
-	          [](const string& sug) { return g_strdup(sug.c_str()); });
-	*out_n_suggs = size(suggestions);
+	if (sug_list) {
+		transform(begin(suggestions), end(suggestions), sug_list,
+			  [](const string& sug) { return g_strdup(sug.c_str()); });
+		*out_n_suggs = size(suggestions);
+	} else
+		*out_n_suggs = 0;
 	return sug_list;
 }
-// End EnchantDict functions
+// End EnchantProviderDict functions
 
 // EnchantProvider functions
-static void nuspell_provider_dispose(EnchantProvider* me) { g_free(me); }
-
-static EnchantDict*
-nuspell_provider_request_dict(_GL_UNUSED EnchantProvider* me,
-                              const char* const tag)
+static vector<filesystem::path>
+nuspell_get_dict_dirs(EnchantProvider *me)
 {
 	auto dirs = vector<filesystem::path>();
+	char *dir = enchant_provider_get_user_dict_dir(me);
+	dirs.push_back(std::filesystem::u8path(dir));
+	g_free(dir);
 	nuspell::append_default_dir_paths(dirs);
+	return dirs;
+}
+
+static EnchantProviderDict*
+nuspell_provider_request_dict(EnchantProvider* me,
+                              const char* const tag)
+{
+	auto dirs = nuspell_get_dict_dirs(me);
 	auto dic_path = nuspell::search_dirs_for_one_dict(dirs, tag);
 	if (empty(dic_path))
 		return nullptr;
@@ -103,7 +112,9 @@ nuspell_provider_request_dict(_GL_UNUSED EnchantProvider* me,
 		return nullptr;
 	}
 
-	EnchantDict* dict = g_new0(EnchantDict, 1);
+	EnchantProviderDict* dict = enchant_provider_dict_new(provider, tag);
+	if (dict == nullptr)
+		return nullptr;
 	dict->user_data = static_cast<void*>(dict_cpp.release());
 	dict->check = nuspell_dict_check;
 	dict->suggest = nuspell_dict_suggest;
@@ -111,19 +122,17 @@ nuspell_provider_request_dict(_GL_UNUSED EnchantProvider* me,
 }
 
 static void nuspell_provider_dispose_dict(_GL_UNUSED EnchantProvider* me,
-                                          EnchantDict* dict)
+                                          EnchantProviderDict* dict)
 {
 	auto dict_cpp = static_cast<nuspell::Dictionary*>(dict->user_data);
 	delete dict_cpp;
-	g_free(dict);
 }
 
 static int
-nuspell_provider_dictionary_exists(_GL_UNUSED EnchantProvider* me,
+nuspell_provider_dictionary_exists(EnchantProvider* me,
                                    const char* const tag)
 {
-	auto dirs = vector<filesystem::path>();
-	nuspell::append_default_dir_paths(dirs);
+	auto dirs = nuspell_get_dict_dirs(me);
 	auto dic_path = nuspell::search_dirs_for_one_dict(dirs, tag);
 	return !empty(dic_path);
 }
@@ -141,14 +150,12 @@ nuspell_provider_describe(_GL_UNUSED EnchantProvider* me)
 }
 
 static char**
-nuspell_provider_list_dicts(_GL_UNUSED EnchantProvider* me,
+nuspell_provider_list_dicts(EnchantProvider* me,
                             size_t* out_n_dicts)
 {
-	auto dicts = nuspell::search_default_dirs_for_dicts();
-	if (empty(dicts)) {
-		*out_n_dicts = 0;
-		return nullptr;
-	}
+	auto dirs = nuspell_get_dict_dirs(me);
+	auto dicts = vector<filesystem::path>();
+	nuspell::search_dirs_for_dicts(dirs, dicts);
 	for (auto& d : dicts)
 		d = d.stem();
 	sort(begin(dicts), end(dicts));
@@ -161,12 +168,21 @@ nuspell_provider_list_dicts(_GL_UNUSED EnchantProvider* me,
 	dicts.erase(it, end(dicts));
 
 	char** dictionary_list = g_new0(char*, size(dicts) + 1);
-	transform(begin(dicts), end(dicts), dictionary_list,
-	          [](const filesystem::path& p) {
-		          return g_strdup(p.string().c_str());
-	          });
-	*out_n_dicts = size(dicts);
+	if (dictionary_list) {
+		transform(begin(dicts), end(dicts), dictionary_list,
+			  [](const filesystem::path& p) {
+				  return g_strdup(p.string().c_str());
+			  });
+		*out_n_dicts = size(dicts);
+	} else
+		*out_n_dicts = 0;
 	return dictionary_list;
+}
+
+static void
+nuspell_provider_dispose (_GL_UNUSED EnchantProvider *me)
+{
+	provider = nullptr;
 }
 
 extern "C" EnchantProvider* init_enchant_provider(void);
@@ -174,7 +190,7 @@ extern "C" EnchantProvider* init_enchant_provider(void);
 EnchantProvider *
 init_enchant_provider (void)
 {
-	EnchantProvider *provider = g_new0(EnchantProvider, 1);
+	provider = enchant_provider_new ();
 	provider->dispose = nuspell_provider_dispose;
 	provider->request_dict = nuspell_provider_request_dict;
 	provider->dispose_dict = nuspell_provider_dispose_dict;

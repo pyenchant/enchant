@@ -1,6 +1,6 @@
 --- gnulib/doc/INSTALL	2017-02-23 15:26:15.296354123 +0000
 +++ INSTALL	2017-12-08 15:38:22.819949859 +0000
-@@ -1,3 +1,52 @@
+@@ -1,3 +1,44 @@
 +Building and installing libenchant
 +**********************************
 +
@@ -9,9 +9,6 @@
 +
 +The usual GNU autotools package instructions apply, except that Enchant must
 +be built with --enable-relocatable for the tests to run successfully.
-+
-+Note that for Enchant to find system-installed dictionaries, you may need
-+the relevant --with-foo-dir option (see ./configure --help).
 +
 +
 +Building from git
@@ -23,13 +20,8 @@
 +Parallel installation
 +=====================
 +
-+Enchant mostly installs in versioned directories, so that different major
-+versions can be installed in parallel.  The one exception is the data files
-+(under pkgdatadir), as these are compatible between different major
-+versions.  To change e.g. /usr/share/enchant to /usr/share/enchant-2, set
-+pkgdatadir when running make, e.g.:
-+
-+make pkgdatadir=/usr/share/enchant-2
++Enchant installs in versioned directories, so that different major
++versions can be installed in parallel.
 +
 +
 +Relocation

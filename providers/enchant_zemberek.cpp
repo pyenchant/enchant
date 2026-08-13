@@ -1,5 +1,6 @@
 /* Copyright (C) 2006 Barış Metin <baris@pardus.org.tr>
  * Copyright (C) 2007 Serkan Kaba <serkan_kaba@yahoo.com>
+ * Copyright (C) 2024-2025 Reuben Thomas
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -8,13 +9,12 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along along with this program; if not, see
+ * <https://www.gnu.org/licenses/>.
  *
  * In addition, as a special exception, the copyright holders
  * give permission to link the code of this program with
@@ -35,6 +35,8 @@
 
 #include "enchant-provider.h"
 
+
+static EnchantProvider *provider;
 
 static bool zemberek_service_is_running ()
 {
@@ -61,6 +63,8 @@ static bool zemberek_service_is_running ()
    return true;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 class Zemberek
 {
 public:
@@ -74,6 +78,7 @@ private:
     DBusGConnection *connection;
     DBusGProxy *proxy;
 };
+#pragma GCC diagnostic pop
 
 Zemberek::Zemberek()
   : connection(nullptr), proxy(nullptr)
@@ -141,7 +146,7 @@ extern "C" {
 EnchantProvider *init_enchant_provider(void);
 
 static int
-zemberek_dict_check (EnchantDict * me, const char *const word, size_t len)
+zemberek_dict_check (EnchantProviderDict * me, const char *const word, size_t len)
 {
     Zemberek *checker = (Zemberek *) me->user_data;
     char *word_nul = g_strndup(word, len);
@@ -151,7 +156,7 @@ zemberek_dict_check (EnchantDict * me, const char *const word, size_t len)
 }
 
 static char**
-zemberek_dict_suggest (EnchantDict * me, const char *const word,
+zemberek_dict_suggest (EnchantProviderDict * me, const char *const word,
                        size_t len, size_t * out_n_suggs)
 {
     Zemberek *checker = (Zemberek *) me->user_data;
@@ -161,14 +166,8 @@ zemberek_dict_suggest (EnchantDict * me, const char *const word,
     return result;
 }
 
-static void
-zemberek_provider_dispose(EnchantProvider *me)
-{
-    g_free(me);
-}
-
-static EnchantDict*
-zemberek_provider_request_dict(EnchantProvider *me _GL_UNUSED, const char *tag)
+static EnchantProviderDict*
+zemberek_provider_request_dict(EnchantProvider *me, const char *tag)
 {
     if (!((strcmp(tag, "tr") == 0) || (strncmp(tag, "tr_", 3) == 0)))
         return NULL; // only handle turkish
@@ -177,7 +176,9 @@ zemberek_provider_request_dict(EnchantProvider *me _GL_UNUSED, const char *tag)
       {
         Zemberek* checker = new Zemberek();
 
-        EnchantDict* dict = g_new0(EnchantDict, 1);
+        EnchantProviderDict* dict = enchant_provider_dict_new(provider, tag);
+        if (dict == NULL)
+                return NULL;
         dict->user_data = (void *) checker;
         dict->check = zemberek_dict_check;
         dict->suggest = zemberek_dict_suggest;
@@ -192,11 +193,10 @@ zemberek_provider_request_dict(EnchantProvider *me _GL_UNUSED, const char *tag)
 }
 
 static void
-zemberek_provider_dispose_dict (EnchantProvider * me _GL_UNUSED, EnchantDict * dict)
+zemberek_provider_dispose_dict (EnchantProvider * me _GL_UNUSED, EnchantProviderDict * dict)
 {
     Zemberek *checker = (Zemberek *) dict->user_data;
     delete checker;
-    g_free (dict);
 }
 
 static const char *
@@ -222,18 +222,27 @@ zemberek_provider_list_dicts (EnchantProvider * me _GL_UNUSED,
     }
   else
     {
-        *out_n_dicts = 1;
+        *out_n_dicts = 0;
         char ** out_list = g_new0 (char *, 2);
-        out_list[0] = g_strdup ("tr");
+        if (out_list) {
+          out_list[0] = g_strdup ("tr");
+          *out_n_dicts = 1;
+        }
 
         return out_list;
     }
 }
 
+static
+zemberek_provider_dispose (EnchantProvider * me _GL_UNUSED)
+{
+	provider = NULL;
+}
+
 EnchantProvider *
 init_enchant_provider(void)
 {
-    EnchantProvider *provider = g_new0(EnchantProvider, 1);
+    provider = enchant_provider_new ();
     provider->dispose = zemberek_provider_dispose;
     provider->request_dict = zemberek_provider_request_dict;
     provider->dispose_dict = zemberek_provider_dispose_dict;

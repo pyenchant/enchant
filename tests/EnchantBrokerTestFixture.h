@@ -31,12 +31,6 @@
 
 //////////////////////////////////////
 // Mock provider functions
-static void
-MockProviderDispose(EnchantProvider *me)
-{
-    g_free(me);
-}
-
 static int
 MockEnGbAndQaaProviderDictionaryExists (EnchantProvider *,
 				     const char *const tag)
@@ -45,21 +39,20 @@ MockEnGbAndQaaProviderDictionaryExists (EnchantProvider *,
 }
 
 
-static EnchantDict*
+static EnchantProviderDict*
 MockEnGbAndQaaProviderRequestDictionary(EnchantProvider * me, const char *tag)
 {
-  	EnchantDict *dict = NULL;
+    EnchantProviderDict *dict = NULL;
 
     if(MockEnGbAndQaaProviderDictionaryExists(me, tag)){
-	    dict = g_new0 (EnchantDict, 1);
+	    dict = enchant_provider_dict_new (me, tag);
     }
 	return dict;
 }
 
 static void
-MockProviderDisposeDictionary (EnchantProvider *, EnchantDict * dict)
+MockProviderDisposeDictionary (EnchantProvider *, EnchantProviderDict * dict)
 {
-    g_free(dict);
 }
 
 static const char *
@@ -97,7 +90,7 @@ MockEnGbProviderListDictionaries (EnchantProvider *,
     return out_list;
 }
 
-typedef void (*SET_CONFIGURE)(ConfigureHook);
+typedef void (*SET_CONFIGURE)(ConfigureHook, ConfigureHook);
 
 struct EnchantBrokerTestFixture : EnchantTestFixture
 {
@@ -117,7 +110,7 @@ struct EnchantBrokerTestFixture : EnchantTestFixture
         if(hModule!=NULL){
             SET_CONFIGURE sc;
             assert(g_module_symbol(hModule, "set_configure", (gpointer *)&sc));
-            (sc)(ConfigureMockProvider);
+            (sc)(ConfigureMockProvider, userConfiguration);
         }
 
         hModule2 = NULL;
@@ -127,7 +120,7 @@ struct EnchantBrokerTestFixture : EnchantTestFixture
             if(hModule2!=NULL){
                 SET_CONFIGURE sc;
                 assert(g_module_symbol(hModule2, "set_configure", (gpointer *)&sc));
-                (sc)(ConfigureMockProvider2);
+                (sc)(ConfigureMockProvider2, user2Configuration);
             }
         }
 
@@ -237,19 +230,19 @@ struct EnchantBrokerTestFixture : EnchantTestFixture
      static EnchantProvider * mock_provider;
      static ConfigureHook userMockProviderConfiguration;
      static ConfigureHook userMockProvider2Configuration;
-     static void ConfigureMockProvider (EnchantProvider * me, const char * dir_name)
+     static void ConfigureMockProvider (EnchantProvider * me)
     {
         mock_provider = me;
         if(userMockProviderConfiguration){
-            userMockProviderConfiguration(me, dir_name);
+            userMockProviderConfiguration(me);
         }
     }
 
-    static void ConfigureMockProvider2 (EnchantProvider * me, const char * dir_name)
+    static void ConfigureMockProvider2 (EnchantProvider * me)
     {
         mock_provider = me;
         if(userMockProvider2Configuration){
-            userMockProvider2Configuration(me, dir_name);
+            userMockProvider2Configuration(me);
         }
     }
 };

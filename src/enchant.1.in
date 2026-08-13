@@ -1,3 +1,15 @@
+\" Enchant program man page
+\"
+\" Copyright (C) 2017-2026 Reuben Thomas
+\"
+\" This library is distributed in the hope that it will be useful,
+\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+\" Lesser General Public License for more details.
+\"
+\" You should have received a copy of the GNU Lesser General Public License
+\" along with this program; if not, see <https://www.gnu.org/licenses/>.
+\"
 .TH ENCHANT-@ENCHANT_MAJOR_VERSION@ 1
 .SH NAME
 Enchant \- a spellchecker
@@ -9,7 +21,10 @@ Enchant \- a spellchecker
 .br
 .SH DESCRIPTION
 .B Enchant
-is an ispell-compatible spellchecker.
+is an Ispell-compatible spellchecker.
+Note that unlike Ispell, it does not have an interactive mode; it is
+designed to be used by other programs.
+Enchant requires its input to be UTF-8.
 .TP
 \fB\-d \fIDICTIONARY\fR
 use the given dictionary
@@ -18,7 +33,7 @@ use the given dictionary
 use the given personal wordlist
 .TP
 .B "\-a"
-list suggestions in ispell pipe mode format
+list suggestions in Ispell pipe mode format
 .TP
 .B "\-l"
 list only the misspellings

@@ -1,6 +1,11 @@
+/config
 /test.pwl
 /main.test
 /main.test.exe
+/providers.test
+/providers.test.exe
+/composite.test
+/composite.test.exe
 libenchant_*.so
 libenchant_*.dylib
 *enchant*.dll

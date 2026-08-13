@@ -25,20 +25,14 @@
 #include <stdio.h>
 #include "mock_provider.h"
 
-static void
-mock_provider_dispose(EnchantProvider *me)
-{
-    g_free(me);
-}
-
-static EnchantDict *
+static EnchantProviderDict *
 mock_provider_request_dict(EnchantProvider *, const char *const)
 {
     return NULL;
 }
 
 static void
-mock_provider_dispose_dict(EnchantProvider *me, EnchantDict *dict)
+mock_provider_dispose_dict(EnchantProvider *me, EnchantProviderDict *dict)
 {
 }
 
@@ -62,13 +56,15 @@ mock_provider_list_dicts (EnchantProvider *me, size_t *out_n_dicts)
 }
 
 static ConfigureHook _hook;
+static ConfigureHook _userHook;
 
 
 extern "C" {
 
 void
-set_configure(ConfigureHook hook){
+set_configure(ConfigureHook hook, ConfigureHook userHook){
     _hook = hook;
+    _userHook = userHook;
 }
 
 
@@ -92,8 +88,7 @@ init_enchant_provider(void)
 
     EnchantProvider *provider;
 	
-    provider = g_new0(EnchantProvider, 1);
-    provider->dispose = mock_provider_dispose; //although this is technically optional, it will result in a memory leak 
+    provider = enchant_provider_new();
     provider->request_dict = mock_provider_request_dict; // this is required or module won't load
     provider->dispose_dict = mock_provider_dispose_dict;
     provider->identify = hasIdentify ? mock_provider_identify : NULL; // this is required or module won't load
@@ -101,15 +96,14 @@ init_enchant_provider(void)
     provider->list_dicts = mock_provider_list_dicts;
     provider->dictionary_exists = NULL;
 
-    return provider;
-}
-
-void
-configure_enchant_provider(EnchantProvider * me, const char *dir_name)
-{
     if(_hook){
-        _hook(me, dir_name);
+        _hook(provider);
     }
+    if(_userHook){
+        _userHook(provider);
+    }
+
+    return provider;
 }
 
 }
